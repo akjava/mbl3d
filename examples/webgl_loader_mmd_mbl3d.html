@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - loaders - Manuel Bastioni Lab</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #fff;
+				color: #000;
+				margin: 0px;
+				overflow: hidden;
+			}
+			#info {
+				color: #000;
+				position: absolute;
+				top: 10px;
+				width: 100%;
+				text-align: center;
+				z-index: 100;
+				display:block;
+			}
+			#info a, .button { color: #f00; font-weight: bold; text-decoration: underline; cursor: pointer }
+		</style>
+	</head>
+
+	<body>
+		<div id="info">
+		<a href="http://threejs.org" target="_blank">three.js</a> - Manuel Bastioni Lab 3D test<br />
+		Copyright
+		<a href="http://www.manuelbastioni.com/" target="_blank">Model Data from Manuel Bastioni Lab 3D</a>
+		<a href="http://threejs.org/examples/#webgl_loader_mmd_pose" target="_blank">This demo based  mmd loader example</a>
+		</div>
+
+		<script src="three.min.js"></script>
+
+
+		<script src="js/Detector.js"></script>
+		<script src="js/libs/stats.min.js"></script>
+		<script src="js/libs/dat.gui.min.js"></script>
+
+		<script>
+
+			var container, stats;
+
+			var camera, scene, renderer;
+			var helper;
+
+			var vpds = [];
+
+			var ready = false;
+
+			var mouseX = 0, mouseY = 0;
+
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+			var clock = new THREE.Clock();
+
+			init();
+			animate();
+			
+			/*
+			remove subsurf-modifier and reset pose when exporting
+			convert blender mesh key exported via r74 exporter.
+			*/
+			function convertMorphVertices(data){
+				var axis = new THREE.Vector3( 1, 0, 0 );
+				var angle = THREE.Math.degToRad( -90 );
+				var array=[];
+				for(var i=0;i<data.vertices.length;i++){
+					var vec=new THREE.Vector3().fromArray(data.vertices[i]);
+					vec.applyAxisAngle( axis, angle );
+					array.push(vec);
+				}
+				return array;
+			}
+			
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera.position.z = 25;
+
+				// scene
+
+				scene = new THREE.Scene();
+
+				var ambient = new THREE.AmbientLight( 0xffffff );
+				scene.add( ambient );
+
+				var directionalLight = new THREE.DirectionalLight( 0x444444 );
+				directionalLight.position.set( -1, 1, 1 ).normalize();
+				scene.add( directionalLight );
+
+				//
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setClearColor( new THREE.Color( 0xffffff ) );
+				container.appendChild( renderer.domElement );
+
+				// model
+
+				var onProgress = function ( xhr ) {
+					if ( xhr.lengthComputable ) {
+						var percentComplete = xhr.loaded / xhr.total * 100;
+						console.log( Math.round(percentComplete, 2) + '% downloaded' );
+					}
+				};
+
+				var onError = function ( xhr ) {
+				};
+
+				
+
+				var loader = new THREE.JSONLoader();
+				
+				var url= "morph.json";
+				new THREE.XHRLoader().load(url,function(text){
+					
+					var json = JSON.parse( text );
+					var morphTargetVertices=[];
+					for(var i=0;i<json.morphTargets.length;i++){
+						morphTargetVertices.push(convertMorphVertices(json.morphTargets[i]));
+					}
+					
+					
+					loader.load(url, function ( geometry, materials ) {
+						
+						geometry.computeBoundingBox();
+						
+						for(var i=0;i<materials.length;i++){
+							materials[i].morphTargets=true;
+						}
+						
+						for(var i=0;i<geometry.morphTargets.length;i++){
+							geometry.morphTargets[i].vertices=morphTargetVertices[i];
+						}
+						
+						var bb = geometry.boundingBox;
+						var x=-20, y=-1270,z= -300,s= 800;
+						
+						var mat=new THREE.MultiMaterial( materials); 
+						
+
+						mesh = new THREE.SkinnedMesh( geometry, mat );
+						mesh.name = "model";
+						mesh.position.set( x, y - bb.min.y * s, z );
+						mesh.scale.set( s, s, s );
+						scene.add( mesh );
+						
+						initGui();
+					} );
+					
+				})
+				
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+				function initGui () {
+
+					var gui = new dat.GUI();
+
+					var dictionary = mesh.morphTargetDictionary;
+					
+					var controls = {};
+					var keys = [];
+
+					//var poses = gui.addFolder( 'Poses' );
+					var morphs = gui.addFolder( 'Morphs' );
+
+					function getBaseName ( s ) {
+
+						return s.slice( s.lastIndexOf( '/' ) + 1 );
+
+					};
+
+					function initControls () {
+
+						for ( var key in dictionary ) {
+
+							controls[ key ] = 0.0;
+
+						}
+
+						
+						
+
+					};
+
+					function initKeys () {
+
+						for ( var key in dictionary ) {
+
+							keys.push( key );
+
+						}
+
+					};
+
+					
+
+					function initMorphs () {
+
+						for ( var key in dictionary ) {
+
+							morphs.add( controls, key, 0.0, 1.0, 0.01 ).onChange( onChangeMorph );
+
+						}
+
+					};
+
+					function onChangeMorph () {
+
+						for ( var i = 0; i < keys.length; i++ ) {
+
+							var key = keys[ i ];
+							var value = controls[ key ];
+							mesh.morphTargetInfluences[ i ] = value;
+
+						}
+
+					};
+
+					
+
+					initControls();
+					initKeys();
+					
+					initMorphs();
+
+					onChangeMorph();
+
+					morphs.open();
+
+				}
+
+
+			}
+
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function onDocumentMouseMove( event ) {
+
+				mouseX = ( event.clientX - windowHalfX ) / 2;
+				mouseY = ( event.clientY - windowHalfY ) / 2;
+
+			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+				render();
+
+			}
+
+			function render() {
+
+				renderer.clear();
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>
