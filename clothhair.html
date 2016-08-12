@@ -1,0 +1,83 @@
+<!doctype html>
+<!-- The DOCTYPE declaration above will set the     -->
+<!-- browser's rendering engine into                -->
+<!-- "Standards Mode". Replacing this declaration   -->
+<!-- with a "Quirks Mode" doctype is not supported. -->
+
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+    <!--                                                               -->
+    <!-- Consider inlining CSS to reduce the number of requested files -->
+    <!--                                                               -->
+    <link type="text/css" rel="stylesheet" href="GWTThreeClothHair.css">
+
+    <!--                                           -->
+    <!-- Any title is fine                         -->
+    <!--                                           -->
+    <title>GWT CLothHair</title>
+    
+    <!--                                           -->
+    <!-- This script loads your compiled module.   -->
+    <!-- If you add any GWT meta tags, they must   -->
+    <!-- be added before this line.                -->
+    <!--                                           -->
+    <script type="text/javascript" language="javascript" src="three.min.js"></script>
+    <script type="text/javascript" language="javascript" src="stats.min.js"></script>
+    <script type="text/javascript" language="javascript" src="ammo.js"></script>
+    <script type="text/javascript" language="javascript" src="cannon.js"></script>
+    <script type="text/javascript" language="javascript" src="js/controls/OrbitControls.js"></script>
+     <script type="text/javascript" language="javascript" src="js/exporters/OBJExporter.js"></script>
+    <script type="text/javascript" language="javascript" src="gwtthreeclothhair/gwtthreeclothhair.nocache.js"></script>
+  </head>
+
+  <!--                                           -->
+  <!-- The body can have arbitrary html, or      -->
+  <!-- you can leave the body empty if you want  -->
+  <!-- to create a completely dynamic UI.        -->
+  <!--                                           -->
+  <body>
+
+    <!-- OPTIONAL: include this if you want history support -->
+    <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
+    
+    <!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
+    <noscript>
+      <div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
+        Your web browser must have JavaScript enabled
+        in order for this application to display correctly.
+      </div>
+    </noscript>
+    <form>
+    <!--
+
+    -->
+    <input type="hidden" id="model" value="models/mbl3d/mbl3d13_breast.json"/>
+    <!-- direct download mbl3d 1.3 need this.mbl3d 1.2 would auto fixed -->
+    <input type="hidden" id="forceFixMorphtargets" value="false"/>
+    <input type="hidden" id="texture" value="models/mbl3d/humanoid_animef_dermal.png"/>
+   
+    
+    <input type="hidden" id="bump" value="models/mbl3d/underware-bump2.png"/>
+   
+   
+    <!-- 5 -->
+    <input type="hidden" id="bumpScale" value=".1"/>
+    
+    <!-- 
+ 	<input type="hidden" id="displacement" value="models/mbl3d/tempdisplacement.png"/>
+ 	 -->
+ 	<!-- 0.02 -->
+ 	
+ 	<input type="hidden" id="displacementScale" value="0.02"/>
+ 	
+ <!-- 
+ 	<input type="hidden" id="ao" value="models/mbl3d/white.png"/>
+ 	 -->
+    <!-- 0.5 -->
+    <input type="hidden" id="aoMapIntensity" value="0.5"/>
+    </form>
+
+ 
+</html>
